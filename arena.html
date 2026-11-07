@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WORLDHACK // Neon Escape</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap">
+  <style>
+    :root { color-scheme: dark; font: 16px system-ui, sans-serif; color: #fff4db; }
+    * { box-sizing: border-box; }
+    body { margin: 0; overflow: hidden; background: #152239; }
+    #arena canvas { display: block; }
+    .panel {
+      position: fixed;
+      z-index: 1;
+      padding: 14px;
+      background: #111b2b;
+      border: 2px solid #43566e;
+      box-shadow: 5px 5px #090f1bcc;
+    }
+    #hud { top: 16px; left: 16px; width: min(370px, calc(100vw - 32px)); }
+    #scanner {
+      right: 16px;
+      bottom: 16px;
+      width: min(380px, calc(100vw - 32px));
+      max-height: 65vh;
+      overflow: auto;
+    }
+    h1 { margin: 0; color: #ffcf66; font-size: 24px; letter-spacing: 0.1em; }
+    p { margin: 8px 0; }
+    small { color: #bbcada; }
+    summary { cursor: pointer; color: #8fe8bc; font-weight: 800; }
+    input { max-width: 100%; margin-top: 12px; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    button {
+      padding: 7px 9px;
+      border: 0;
+      background: #ffcf66;
+      color: #172135;
+      font: inherit;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.45; cursor: default; }
+    #play { background: #8fe8bc; margin-top: 10px; }
+    #camera, #photo { width: 100%; max-height: 170px; object-fit: contain; }
+    .conversion {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      padding: 8px;
+      background: #223149;
+    }
+    figure { margin: 0; text-align: center; }
+    figure img { display: block; width: 100%; height: 66px; object-fit: contain; }
+    figcaption { font-size: 12px; text-transform: capitalize; }
+  
+    :root { font-family: "Avenir Next", system-ui, sans-serif; }
+    .panel { border: 1px solid #ffffff30; border-radius: 18px; background: #14244ae8;
+      box-shadow: 0 12px 36px #13234755; }
+    #hud { width: min(330px, calc(100vw - 32px)); pointer-events: none; }
+    h1 { color: #fff; font-size: 25px; letter-spacing: -.035em; font-style: italic; font-weight: 950; }
+    .eyebrow { color: #a3eaff; font-weight: 850; font-size: 10px; letter-spacing: .18em; }
+    #game-status { font-size: 14px; font-weight: 650; min-height: 2.5em; }
+    #inventory { display: flex; gap: 7px; margin: 9px 0; }
+    #inventory span { border-radius: 8px; background: #ffffff16; padding: 5px 8px;
+      font-size: 11px; font-weight: 800; }
+    #inventory span[data-ready="true"] { background: #a4f2ca; color: #152844; }
+    #scanner { width: auto; }
+    #scanner > summary { color: #172c50; background: #a4eaff; border-radius: 10px;
+      padding: 9px 13px; font-size: 13px; }
+    #scanner:not([open]) { background: transparent; border: 0; box-shadow: none; padding: 0; }
+    #scanner[open] { top: 50%; left: 50%; right: auto; bottom: auto;
+      transform: translate(-50%, -50%); width: min(650px, calc(100vw - 32px));
+      max-height: 88dvh; padding: 20px; z-index: 3; }
+    body:has(#scanner[open])::before { content: ""; position: fixed; inset: 0; z-index: 2;
+      background: #102148bb; backdrop-filter: blur(6px); }
+    .scan-heading { margin: 14px 0 4px; font-size: 24px; font-weight: 900; }
+    #conversions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 8px; }
+    .conversion { border-radius: 10px; margin: 0; }
+    button { border-radius: 8px; }
+    #play { width: 100%; padding: 12px; }
+    #arena { position: fixed; inset: 0; }
+  
+    :root {
+      --cyan: #60f8ff; --pink: #ff60e3; --lime: #aaff65; --ink: #100a29;
+      font: 11px/1.8 "Press Start 2P", monospace;
+      color: #fbf3ff; background: var(--ink);
+    }
+    body { background: var(--ink); }
+    button, input, input::file-selector-button { font: inherit; }
+    .panel {
+      color: #fbf3ff; background: #130b2aee; border: 1px solid var(--cyan);
+      border-radius: 0; box-shadow: 4px 4px #60f8ff35, 0 0 20px #60f8ff28;
+    }
+    #hud { width: min(390px, calc(100vw - 32px)); }
+    h1 { font-size: clamp(16px, 3vw, 22px); color: var(--cyan); font-style: normal; letter-spacing: 0; }
+    #game-status, #inventory span { font-size: 9px; }
+    #game-status { min-height: 0; }
+    #inventory { flex-wrap: wrap; }
+    #inventory span { border-radius: 0; }
+    #inventory span[data-ready="true"] { background: var(--lime); color: var(--ink); }
+    .eyebrow, .scan-heading { color: var(--pink); }
+    .scan-heading { font-size: 15px; }
+    figcaption { font-size: 8px; }
+    .conversion { background: #231542; border-radius: 0; }
+    #scanner > summary, button, #play {
+      color: var(--ink); background: var(--cyan); border-radius: 0;
+      border: 1px solid transparent; font-size: 10px;
+    }
+    #play { background: var(--lime); }
+    :focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+    dialog {
+      width: min(680px, calc(100vw - 32px)); max-height: 90dvh;
+      padding: clamp(22px, 5vw, 42px); border: 2px solid var(--cyan);
+      color: #fbf3ff; background: linear-gradient(145deg, #211044, #110922 70%);
+      text-align: center; box-shadow: 7px 7px #60f8ff55, 0 0 44px #60f8ff44;
+    }
+    dialog::backdrop { background: #08041ac9; backdrop-filter: blur(5px); }
+    dialog h2 {
+      margin: 18px 0; color: var(--cyan); font-size: clamp(19px, 5vw, 42px);
+      line-height: 1.45; text-shadow: 3px 3px #934bff;
+    }
+    dialog p { margin: 14px auto; max-width: 46ch; }
+    .screen-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 26px; }
+    .screen-actions button { padding: 12px 14px; }
+    .screen-actions .secondary { color: var(--cyan); background: transparent; border-color: var(--cyan); }
+    .screen-controls { display: block; margin-top: 20px; font-size: 8px; }
+    #death-screen { border-color: var(--pink); box-shadow: 7px 7px #ff60e355, 0 0 44px #ff60e344; }
+    #death-screen h2 { color: var(--pink); text-shadow: 3px 3px #9d315c; }
+    #retry { background: var(--pink); }
+    #victory-screen {
+      border-color: var(--lime);
+      box-shadow: 7px 7px #aaff6555, 0 0 44px #aaff6444;
+    }
+    #victory-screen h2 { color: var(--lime); text-shadow: 3px 3px #407b28; }
+    #victory-upload { background: var(--lime); }
+  </style>
+</head>
+<body>
+  <main id="arena" aria-label="WORLDHACK 3D arena"></main>
+
+  <section id="hud" class="panel">
+    <div class="eyebrow">DESKTOP ESCAPE</div>
+    <h1>WORLDHACK</h1>
+    <p id="game-status">Loading the arena…</p>
+    <div id="inventory">
+      <span id="key-state">KEY · FIND</span>
+      <span id="water-state">WATER · EMPTY</span>
+      <span id="power-state" hidden></span>
+      <span id="exit-state">EXIT · LOCKED</span>
+    </div>
+    <small>WASD / arrows · E use charge · V overview · R restart</small>
+  </section>
+
+  <details id="scanner" class="panel">
+    <summary>Scan your desk</summary>
+    <div class="scan-heading">Build your escape route</div>
+    <p>Scan the objects in front of you and see what they become.</p>
+    <input id="upload" type="file" accept="image/*" aria-label="Upload a desk photo">
+    <div class="buttons">
+      <button id="open-camera" type="button">Open camera</button>
+      <button id="capture" type="button" disabled>Take photo</button>
+      <button id="close-camera" type="button" disabled>Close camera</button>
+    </div>
+    <video id="camera" autoplay muted playsinline hidden></video>
+    <canvas id="photo" aria-label="Photo with detected objects outlined" hidden></canvas>
+    <p id="scan-status" aria-live="polite">Take or upload a photo of your objects.</p>
+    <div id="conversions"></div>
+    <button id="play" type="button" hidden>Play this level</button>
+  </details>
+
+  <dialog id="welcome-screen" aria-labelledby="welcome-title">
+    <div class="eyebrow">PHOTO-TO-LEVEL ARCADE</div>
+    <h2 id="welcome-title">WORLDHACK</h2>
+    <p>Scan your desk. Dodge the lava. Grab the key and get out.</p>
+    <div class="screen-actions">
+      <button id="welcome-scan" type="button" autofocus>Scan your desk</button>
+      <button id="welcome-play" class="secondary" type="button">Play sample level</button>
+    </div>
+    <small class="screen-controls">WASD / arrows · E use charge · V overview</small>
+  </dialog>
+
+  <dialog id="death-screen" aria-labelledby="death-title">
+    <div id="death-attempt" class="eyebrow">ATTEMPT 01</div>
+    <h2 id="death-title">GAME OVER</h2>
+    <p>The lava caught you. Get clear of the glowing tiles or use water before the eruption.</p>
+    <div class="screen-actions">
+      <button id="retry" type="button" autofocus>Retry level</button>
+      <button id="death-scan" class="secondary" type="button">Scan a new desk</button>
+    </div>
+  </dialog>
+
+  <dialog id="victory-screen" aria-labelledby="victory-title">
+    <div class="eyebrow">MISSION COMPLETE</div>
+    <h2 id="victory-title">YOU ESCAPED!</h2>
+    <p>Key secured. Hatch unlocked. Ready to turn another desk into a level?</p>
+    <div class="screen-actions">
+      <button id="victory-upload" type="button" autofocus>Upload new image</button>
+      <button id="victory-replay" class="secondary" type="button">Replay level</button>
+    </div>
+  </dialog>
+
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+
+    const byId = id => document.getElementById(id);
+    const welcomeScreen = byId("welcome-screen");
+    const deathScreen = byId("death-screen");
+    const victoryScreen = byId("victory-screen");
+    let attempt = 1;
+    const scanner = byId("scanner");
+    const upload = byId("upload");
+    const photo = byId("photo");
+    const context = photo.getContext("2d");
+    const video = byId("camera");
+    const openCamera = byId("open-camera");
+    const capture = byId("capture");
+    const closeCamera = byId("close-camera");
+    const scanStatus = byId("scan-status");
+    const conversions = byId("conversions");
+    const play = byId("play");
+    const status = byId("game-status");
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#231245");
+    scene.fog = new THREE.Fog("#231245", 20, 52);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    byId("arena").appendChild(renderer.domElement);
+
+    function resize() {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(innerWidth, innerHeight);
+    }
+
+    function light(target) {
+      target.add(new THREE.HemisphereLight(0xfff0d4, 0x6370a2, 2));
+      const sun = new THREE.DirectionalLight(0xffe0b0, 2.2);
+      sun.position.set(-4, 8, 6);
+      if (target === scene) {
+        sun.position.set(-8, 14, 8);
+        sun.castShadow = true;
+        Object.assign(sun.shadow.camera, { left: -12, right: 12, top: 12, bottom: -12, far: 42 });
+        sun.shadow.mapSize.set(1024, 1024);
+        sun.shadow.normalBias = 0.04;
+      }
+      target.add(sun);
+    }
+
+    function group(parent = scene) {
+      const object = new THREE.Group();
+      parent.add(object);
+      return object;
+    }
+
+    function box(parent, width, height, depth, color, x, y, z, glow) {
+      const material = new THREE.MeshStandardMaterial({ color });
+      if (glow) material.emissive.set(glow);
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+      mesh.position.set(x, y, z);
+      parent.add(mesh);
+      return mesh;
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+    light(scene);
+
+    // The oversized room gives the desk scale without adding gameplay obstacles.
+    box(scene, 100, 0.4, 100, "#332355", 0, -5.8, 0).receiveShadow = true;
+    box(scene, 100, 30, 0.5, "#362262", 0, 6, -18);
+    box(scene, 15, 9, 0.3, "#995eff", -7, 5.5, -17.65, "#4c1c94");
+    box(scene, 0.25, 9, 0.36, "#54eaff", -7, 5.5, -17.4);
+    box(scene, 15, 0.23, 0.36, "#54eaff", -7, 5.5, -17.4);
+    for (const [x, z] of [[-6, -5], [-6, 5], [6, -5], [6, 5]]) {
+      box(scene, 0.8, 5, 0.8, "#b7734b", x, -3, z);
+    }
+    for (const [i, color] of ["#585fc7", "#42b9b5", "#ee8060"].entries()) {
+      box(scene, 5.8 - i * 0.3, 0.65, 3.1, color, 9.5, -4.9 + i * 0.65, -8.5);
+      box(scene, 5.5 - i * 0.3, 0.4, 0.12, "#e7e8fb", 9.5, -4.9 + i * 0.65, -6.94);
+    }
+
+    box(scene, 14, 0.72, 12, "#92553e", 0, -0.37, 0).castShadow = true;
+    box(scene, 14.18, 0.12, 12.18, "#37d7f7", 0, -0.14, 0, "#087ea6");
+    const wood = ["#342557", "#3d2c65", "#39295c", "#45326d"];
+    for (let row = 0; row < 12; row++) {
+      for (let col = 0; col < 14; col++) {
+        const color = wood[(row * 7 + col * 3 + Math.floor(col / 3)) % wood.length];
+        box(scene, 0.994, 0.15, 0.994, color, col - 6.5, -0.075, row - 5.5).receiveShadow = true;
+      }
+    }
+
+    const volcano = group();
+    const volcanoModel = group(volcano);
+    box(volcanoModel, 2.5, 0.48, 2.5, "#352d3e", 0, 0.24, 0);
+    box(volcanoModel, 2.1, 0.48, 2.1, "#493648", 0, 0.72, 0);
+    box(volcanoModel, 1.7, 0.48, 1.7, "#61434c", 0, 1.2, 0);
+
+    for (const side of [-1, 1]) {
+      box(volcanoModel, 1.5, 0.48, 0.28, "#3e3040", 0, 1.68, side * 0.61);
+      box(volcanoModel, 0.28, 0.48, 0.94, "#50384a", side * 0.61, 1.68, 0);
+    }
+
+    const lava = box(volcanoModel, 0.92, 0.08, 0.92, "#ff6019", 0, 1.59, 0, "#ff430b");
+    for (const [y, z, height] of [
+      [1.63, 0.76, 0.38], [1.22, 0.86, 0.46],
+      [0.74, 1.06, 0.48], [0.25, 1.26, 0.5]
+    ]) {
+      box(volcanoModel, 0.25, height, 0.1, "#ff7a24", 0.24, y, z, "#ff430b");
+    }
+
+    const blastRadius = 4;
+    const blast = group(volcano);
+    const tileGeometry = new THREE.BoxGeometry(0.46, 0.022, 0.46);
+    const tileMaterial = new THREE.MeshBasicMaterial({
+      color: "#ffce56", transparent: true, opacity: 0.72, depthWrite: false
+    });
+
+    for (let x = -3.75; x <= 3.75; x += 0.5) {
+      for (let z = -3.75; z <= 3.75; z += 0.5) {
+        if (Math.hypot(x, z) >= blastRadius) continue;
+        const tile = new THREE.Mesh(tileGeometry, tileMaterial);
+        tile.position.set(x, 0.023, z);
+        blast.add(tile);
+      }
+    }
+
+    const bottle = group();
+    bottle.position.set(-2.6, 0, 0);
+    const bottleModel = group(bottle);
+    box(bottleModel, 0.55, 0.65, 0.48, "#36caff", 0, 0.42, 0, "#056fa2");
+    box(bottleModel, 0.57, 0.19, 0.5, "#d0f4ff", 0, 0.44, 0);
+    box(bottleModel, 0.31, 0.19, 0.31, "#2057bd", 0, 0.84, 0);
+
+    const player = group();
+    const runner = group(player);
+    const legs = [];
+    const arms = [];
+    for (const side of [-1, 1]) {
+      const leg = group(runner);
+      leg.position.set(side * 0.15, 0.36, 0);
+      box(leg, 0.21, 0.24, 0.22, "#263869", 0, -0.12, 0);
+      box(leg, 0.23, 0.14, 0.33, "#152344", 0, -0.28, 0.055);
+      legs.push(leg);
+
+      const arm = group(runner);
+      arm.position.set(side * 0.32, 0.69, 0);
+      box(arm, 0.15, 0.23, 0.19, "#fa683f", 0, -0.1, 0);
+      box(arm, 0.14, 0.12, 0.16, "#f1b582", 0, -0.25, 0);
+      arms.push(arm);
+      box(runner, 0.046, 0.05, 0.022, "#202c46", side * 0.085, 0.9, 0.22);
+    }
+    box(runner, 0.49, 0.41, 0.33, "#ff7445", 0, 0.55, 0);
+    box(runner, 0.42, 0.38, 0.23, "#32b9b4", 0, 0.55, -0.26);
+    box(runner, 0.31, 0.075, 0.035, "#b3fff0", 0, 0.57, -0.385);
+    box(runner, 0.4, 0.34, 0.39, "#f1b582", 0, 0.88, 0.01);
+    box(runner, 0.58, 0.07, 0.51, "#ffbb35", 0, 1.02, 0.02);
+    box(runner, 0.39, 0.15, 0.36, "#ffd056", 0, 1.12, 0.02);
+    runner.scale.setScalar(1.22);
+
+    function castShadows(object) {
+      object.traverse(child => {
+        if (child.isMesh) child.castShadow = true;
+      });
+    }
+
+    castShadows(runner);
+    castShadows(volcanoModel);
+    castShadows(bottleModel);
+
+    const embers = group(volcano);
+    for (let index = 0; index < 18; index++) {
+      box(embers, 0.09, 0.09, 0.09, "#ffca56", 0, 0, 0, "#ff5510");
+    }
+    embers.visible = false;
+
+    const exit = group();
+    exit.position.set(5.5, 0, -4.5);
+    box(exit, 1.55, 0.16, 1.55, "#bd9857", 0, 0.08, 0);
+    box(exit, 1.42, 0.12, 1.42, "#ffdb87", 0, 0.22, 0);
+    const hatch = box(exit, 1.03, 0.09, 1.03, "#8294a6", 0, 0.325, 0);
+    box(exit, 0.32, 0.06, 0.12, "#26354a", 0, 0.4, 0.12);
+
+    const goldKey = group();
+    goldKey.position.set(-4, 0, -2);
+
+    box(goldKey, 0.56, 0.12, 0.24, "#ffcf66", 0, 0.45, 0, "#a45a00");
+    box(goldKey, 0.22, 0.12, 0.42, "#ffcf66", -0.25, 0.45, 0, "#a45a00");
+    box(goldKey, 0.12, 0.12, 0.24, "#ffcf66", 0.23, 0.45, 0.15, "#a45a00");
+
+    const powers = group();
+    const shockModel = new THREE.Group();
+    const speedModel = new THREE.Group();
+    box(shockModel, 0.65, 0.32, 0.65, "#6543ba", 0, 0.2, 0);
+    box(shockModel, 0.38, 0.48, 0.38, "#ff60e3", 0, 0.54, 0, "#ac1a88");
+    box(speedModel, 0.65, 0.24, 0.65, "#0f8a79", 0, 0.18, 0);
+    box(speedModel, 0.30, 0.44, 0.30, "#aaff65", 0, 0.49, 0, "#4aab00");
+
+    const keys = new Set();
+    const direction = new THREE.Vector3();
+    const velocity = new THREE.Vector3();
+    const cameraTarget = new THREE.Vector3();
+    const cameraGoal = new THREE.Vector3();
+    const lookGoal = new THREE.Vector3();
+    const keyState = byId("key-state");
+    const waterState = byId("water-state");
+    const exitState = byId("exit-state");
+    let overview = false;
+    let stride = 0;
+
+    function followCamera(dt, snap = false) {
+      const zoom = Math.max(1, 0.85 / camera.aspect);
+      if (overview) {
+        cameraGoal.set(0, 14 * zoom, 14 * zoom);
+        lookGoal.set(0, 0, 0);
+      } else {
+        cameraGoal.set(player.position.x, 4.5 * zoom, player.position.z + 6.5 * zoom);
+        lookGoal.set(player.position.x, 0.65, player.position.z - 2);
+      }
+      const blend = snap ? 1 : 1 - Math.exp(-7 * dt);
+      camera.position.lerp(cameraGoal, blend);
+      cameraTarget.lerp(lookGoal, blend);
+      camera.lookAt(cameraTarget);
+    }
+
+    function updateInventory() {
+      const powerState = byId("power-state");
+      powerState.hidden = !hasShockwave && boostUntil <= time;
+      powerState.textContent = hasShockwave ? "SHOCKWAVE · E" : "SPEED · ACTIVE";
+      powerState.dataset.ready = true;
+      const keyReady = !goldKey.visible;
+      const exitReady = unlocked && keyReady;
+      keyState.textContent = keyReady ? "KEY · FOUND" : "KEY · FIND";
+      waterState.textContent = hasWater ? "WATER · READY" : "WATER · EMPTY";
+      exitState.textContent = exitReady ? "EXIT · OPEN" : "EXIT · LOCKED";
+      keyState.dataset.ready = keyReady;
+      waterState.dataset.ready = hasWater;
+      exitState.dataset.ready = exitReady;
+    }
+    const clock = new THREE.Clock();
+    const spawn = { x: 0, z: 3 };
+    const cycleLength = 8;
+    const warningStart = 3;
+    const eruptionStart = 5;
+    const eruptionEnd = 6.5;
+    let time, hasWater, cooledCycle, unlocked, won;
+    let hasShockwave = false;
+    let boostUntil = 0;
+    let waterInLayout = true;
+
+    function distance(x, z, point) {
+      return Math.hypot(x - point.x, z - point.z);
+    }
+
+    function playerDistance(object) {
+      return distance(player.position.x, player.position.z, object.position);
+    }
+
+    function reset() {
+      player.position.set(spawn.x, 0, spawn.z);
+      player.rotation.y = Math.PI;
+      velocity.set(0, 0, 0);
+      runner.position.y = 0;
+      for (const limb of [...legs, ...arms]) limb.rotation.x = 0;
+      stride = 0;
+      embers.visible = false;
+      bottle.visible = waterInLayout;
+      hasShockwave = false;
+      boostUntil = 0;
+      for (const power of powers.children) power.visible = true;
+      goldKey.visible = true;
+      bottleModel.position.y = 0;
+      volcanoModel.position.x = 0;
+      lava.material.emissiveIntensity = 1.25;
+      blast.visible = false;
+      hatch.material.color.set("#8294a6");
+      hatch.material.emissive.set("#000000");
+      time = 0;
+      hasWater = false;
+      cooledCycle = -1;
+      unlocked = false;
+      won = false;
+      updateInventory();
+      status.textContent = "Grab the water or get outside the blast zone.";
+    }
+
+    function placeFromPhoto(object, point, isAllowed) {
+      const targetX = (point.x - 0.5) * 10;
+      const targetZ = (point.y - 0.5) * 7;
+      let nearest = Infinity;
+
+      for (let x = -5; x <= 5; x += 0.5) {
+        for (let z = -3.5; z <= 3.5; z += 0.5) {
+          const error = Math.hypot(x - targetX, z - targetZ);
+          if (error >= nearest || !isAllowed(x, z)) continue;
+          nearest = error;
+          object.position.set(x, 0, z);
+        }
+      }
+      return Number.isFinite(nearest);
+    }
+
+    function applyLayout(entries) {
+      const hazard = entries.find(entry => entry.role === "volcano");
+      const water = entries.find(entry => entry.role === "water");
+      waterInLayout = Boolean(water);
+
+      placeFromPhoto(volcano, hazard?.point ?? { x: 0.5, y: 0.5 }, (x, z) =>
+        distance(x, z, spawn) > 2.1 && distance(x, z, exit.position) > 2.5
+      );
+
+      if (water) {
+        placeFromPhoto(bottle, water.point, (x, z) =>
+          distance(x, z, volcano.position) > 2.4
+        );
+      }
+
+      powers.clear();
+      const placed = entries.filter(entry => entry === hazard || entry === water);
+
+      for (const entry of entries) {
+        if (entry.role !== "shockwave" && entry.role !== "speed") continue;
+        const power = gameForms[entry.role].model.clone(true);
+        power.userData.role = entry.role;
+
+        const foundSpot = placeFromPhoto(power, entry.point, (x, z) =>
+          distance(x, z, spawn) > 1.2 &&
+          distance(x, z, exit.position) > 1.4 &&
+          distance(x, z, volcano.position) > 2.2 &&
+          (!water || distance(x, z, bottle.position) > 1.2) &&
+          powers.children.every(other => distance(x, z, other.position) > 1.3)
+        );
+
+        if (foundSpot) {
+          castShadows(power);
+          powers.add(power);
+          placed.push(entry);
+        }
+      }
+
+      placeFromPhoto(goldKey, { x: 0.1, y: 0.22 }, (x, z) =>
+        distance(x, z, spawn) > 2 &&
+        distance(x, z, exit.position) > 2 &&
+        distance(x, z, volcano.position) > blastRadius + 0.2 &&
+        (!water || distance(x, z, bottle.position) > 1.2)
+      );
+
+      for (const tile of blast.children) {
+        tile.visible =
+          Math.abs(volcano.position.x + tile.position.x) <= 6.75 &&
+          Math.abs(volcano.position.z + tile.position.z) <= 5.75;
+      }
+
+      keys.clear();
+      reset();
+      return placed;
+    }
+
+    function canWalk(x, z) {
+      return distance(x, z, volcano.position) > 1.85;
+    }
+
+    function update(dt) {
+      time += dt;
+
+      direction.set(
+        Number(keys.has("d") || keys.has("arrowright")) -
+          Number(keys.has("a") || keys.has("arrowleft")),
+        0,
+        Number(keys.has("s") || keys.has("arrowdown")) -
+          Number(keys.has("w") || keys.has("arrowup"))
+      ).normalize();
+
+      velocity.lerp(direction.multiplyScalar(time < boostUntil ? 8.5 : 5), 1 - Math.exp(-15 * dt));
+      const { x: previousX, z: previousZ } = player.position;
+      const x = THREE.MathUtils.clamp(previousX + velocity.x * dt, -6.7, 6.7);
+      const z = THREE.MathUtils.clamp(previousZ + velocity.z * dt, -5.7, 5.7);
+      if (canWalk(x, previousZ)) player.position.x = x;
+      if (canWalk(player.position.x, z)) player.position.z = z;
+
+      const dx = player.position.x - previousX;
+      const dz = player.position.z - previousZ;
+      const moving = Math.hypot(dx, dz) > 0.001;
+      if (moving) {
+        const turn = Math.atan2(dx, dz) - player.rotation.y;
+        player.rotation.y += Math.atan2(Math.sin(turn), Math.cos(turn)) * (1 - Math.exp(-16 * dt));
+        stride += Math.hypot(dx, dz) * 7;
+      }
+
+      const swing = moving ? Math.sin(stride) * 0.65 : 0;
+      const settle = 1 - Math.exp(-18 * dt);
+      for (let side = 0; side < 2; side++) {
+        const step = side === 0 ? swing : -swing;
+        legs[side].rotation.x = THREE.MathUtils.lerp(legs[side].rotation.x, step, settle);
+        arms[side].rotation.x = THREE.MathUtils.lerp(arms[side].rotation.x, -step * 0.8, settle);
+      }
+      runner.position.y = moving ? Math.abs(Math.sin(stride)) * 0.055 : 0;
+
+      bottleModel.position.y = (1 + Math.sin(time * 4)) * 0.07;
+      if (bottle.visible && playerDistance(bottle) < 0.7) {
+        bottle.visible = false;
+        hasWater = true;
+      }
+
+      for (const power of powers.children) {
+        power.rotation.y += dt * 2;
+        if (!power.visible || playerDistance(power) >= 0.75) continue;
+        if (power.userData.role === "shockwave") {
+          if (hasShockwave) continue;
+          hasShockwave = true;
+        } else {
+          boostUntil = time + 3;
+        }
+        power.visible = false;
+      }
+
+      goldKey.rotation.y += dt * 2;
+      if (goldKey.visible && playerDistance(goldKey) < 0.7) {
+        goldKey.visible = false;
+      }
+      const phase = time % cycleLength;
+      const cooled = cooledCycle === Math.floor(time / cycleLength);
+      const warning = !cooled && phase >= warningStart && phase < eruptionStart;
+      const erupting = !cooled && phase >= eruptionStart && phase < eruptionEnd;
+
+      blast.visible = warning || erupting;
+      embers.visible = warning || erupting;
+      if (embers.visible) {
+        embers.children.forEach((spark, index) => {
+          const age = (time * (erupting ? 1.5 : 0.8) + index / 18) % 1;
+          const angle = index * 2.4;
+          const spread = age * (erupting ? 2.25 : 0.65);
+          spark.position.set(Math.cos(angle) * spread, 1.75 + Math.sin(age * Math.PI) * (erupting ? 2.4 : 0.65), Math.sin(angle) * spread);
+          spark.scale.setScalar(1 - age * 0.7);
+        });
+      }
+      tileMaterial.color.set(erupting ? "#ff246f" : "#fff364");
+      tileMaterial.opacity = warning ? 0.63 + Math.sin(time * 9) * 0.15 : 0.9;
+      volcanoModel.position.x = warning ? Math.sin(time * 35) * 0.04 : 0;
+      lava.material.emissiveIntensity = erupting ? 2.4 : 1.25;
+
+      if (erupting && playerDistance(volcano) < blastRadius) {
+        keys.clear();
+        velocity.set(0, 0, 0);
+        byId("death-attempt").textContent = "ATTEMPT " + String(attempt).padStart(2, "0");
+        deathScreen.showModal();
+        return;
+      }
+
+      if (time >= eruptionEnd) unlocked = true;
+      const exitOpen = unlocked && !goldKey.visible;
+      hatch.material.color.set(exitOpen ? "#76f6ae" : "#8294a6");
+      hatch.material.emissive.set(exitOpen ? "#175c3d" : "#000000");
+      won = exitOpen && playerDistance(exit) < 0.9;
+      updateInventory();
+
+      if (won) {
+        keys.clear();
+        velocity.set(0, 0, 0);
+        status.textContent = "You escaped!";
+        victoryScreen.showModal();
+      }
+      else if (erupting) status.textContent = "ERUPTION! Get clear of the pink tiles.";
+      else if (warning) status.textContent = hasShockwave || hasWater
+        ? "Volcano rumbling! Press E to use a charge, or dodge the blast."
+        : "Volcano rumbling! Get off the yellow tiles.";
+      else if (exitOpen) status.textContent = "Exit unlocked! Run to the green hatch.";
+      else if (unlocked) status.textContent = "You cleared the eruption. Find the gold key.";
+      else if (!goldKey.visible) status.textContent = "Key collected! Survive or cool the eruption.";
+      else if (hasWater) status.textContent = "Water collected. Press E when the tiles turn yellow.";
+      else status.textContent = "Grab the water or get outside the blast zone.";
+    }
+
+    window.addEventListener("keydown", event => {
+      if (scanner.open || welcomeScreen.open || deathScreen.open || victoryScreen.open) return;
+      const key = event.key.toLowerCase();
+      if (key.startsWith("arrow")) event.preventDefault();
+      keys.add(key);
+      if (event.repeat) return;
+
+      if (key === "r") {
+        reset();
+        followCamera(0, true);
+      }
+      if (key === "v") overview = !overview;
+
+      const phase = time % cycleLength;
+      const cycle = Math.floor(time / cycleLength);
+      if (key === "e" && !won && phase >= warningStart && cooledCycle !== cycle &&
+          ((hasShockwave && phase < eruptionEnd) || (hasWater && phase < eruptionStart))) {
+        if (hasShockwave) hasShockwave = false;
+        else hasWater = false;
+        cooledCycle = Math.floor(time / cycleLength);
+        unlocked = true;
+      }
+    });
+
+    window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
+    window.addEventListener("blur", () => keys.clear());
+
+    reset();
+    followCamera(0, true);
+    renderer.setAnimationLoop(() => {
+      const dt = Math.min(clock.getDelta(), 0.05);
+      if (!scanner.open && !welcomeScreen.open && !deathScreen.open && !won) update(dt);
+      followCamera(dt);
+      renderer.render(scene, camera);
+    });
+
+    // Render before-and-after images using the actual game models.
+    const thumbnails = new Map();
+    let thumbnailRenderer;
+
+    function modelImage(model) {
+      if (thumbnails.has(model)) return thumbnails.get(model);
+
+      thumbnailRenderer ??= new THREE.WebGLRenderer({
+        antialias: true,
+        preserveDrawingBuffer: true
+      });
+      thumbnailRenderer.setSize(180, 120, false);
+
+      const studio = new THREE.Scene();
+      studio.background = new THREE.Color("#152239");
+      light(studio);
+
+      const copy = model.clone(true);
+      copy.position.set(0, 0, 0);
+      studio.add(copy);
+
+      const bounds = new THREE.Box3().setFromObject(copy);
+      const center = bounds.getCenter(new THREE.Vector3());
+      const size = bounds.getSize(new THREE.Vector3()).length();
+      const lens = new THREE.OrthographicCamera(
+        -size * 0.8, size * 0.8, size * 0.53, -size * 0.53, 0.01, 30
+      );
+      lens.position.copy(center).add(new THREE.Vector3(size, size * 0.8, size * 1.5));
+      lens.lookAt(center);
+      thumbnailRenderer.render(studio, lens);
+
+      const image = thumbnailRenderer.domElement.toDataURL("image/png");
+      thumbnails.set(model, image);
+      return image;
+    }
+
+    function cropImage(source, [x, y, width, height]) {
+      const crop = document.createElement("canvas");
+      crop.width = Math.max(1, Math.round(width));
+      crop.height = Math.max(1, Math.round(height));
+      crop.getContext("2d").drawImage(source, x, y, width, height, 0, 0, crop.width, crop.height);
+      return crop.toDataURL("image/png");
+    }
+
+    function imageCard(source, label) {
+      const figure = document.createElement("figure");
+      const image = new Image();
+      image.src = source;
+      image.alt = label;
+      const caption = document.createElement("figcaption");
+      caption.textContent = label;
+      figure.append(image, caption);
+      return figure;
+    }
+
+    const gameForms = {
+      volcano: { name: "Volcano", color: "#ffcf66", model: volcanoModel },
+      water: { name: "Water pickup", color: "#62dcff", model: bottleModel },
+      shockwave: { name: "Shockwave", color: "#ff60e3", model: shockModel },
+      speed: { name: "Speed boost", color: "#aaff65", model: speedModel }
+    };
+
+    function showConversion(source, entry) {
+      const form = gameForms[entry.role];
+      context.strokeStyle = form.color;
+      context.lineWidth = 4;
+      context.strokeRect(...entry.bounds);
+
+      const row = document.createElement("div");
+      row.className = "conversion";
+      const arrow = document.createElement("span");
+      arrow.textContent = "→";
+      row.append(
+        imageCard(cropImage(source, entry.bounds), entry.name),
+        arrow,
+        imageCard(modelImage(form.model), entry.title + " · " + form.name)
+      );
+      const feature = document.createElement("small");
+      feature.style.gridColumn = "1 / -1";
+      feature.textContent = entry.feature;
+      row.append(feature);
+      conversions.append(row);
+    }
+
+    function selectObjects(objects, width, height) {
+      const entries = [];
+      for (const item of objects) {
+        if (entries.length >= 5) break;
+        if (!item || !Object.hasOwn(gameForms, item.role) ||
+            !Array.isArray(item.box) || item.box.length !== 4 ||
+            !item.box.every(value => Number.isFinite(value) && value >= 0 && value <= 1000)) continue;
+        if ([item.name, item.title, item.feature].some(value => typeof value !== "string" || !value.trim())) continue;
+        if ((item.role === "volcano" || item.role === "water") &&
+            entries.some(entry => entry.role === item.role)) continue;
+
+        const [left, top, right, bottom] = item.box.map(value => value / 1000);
+        if (right <= left || bottom <= top) continue;
+
+        entries.push({
+          name: item.name.slice(0, 45),
+          title: item.title.slice(0, 45),
+          feature: item.feature.slice(0, 140),
+          role: item.role,
+          bounds: [left * width, top * height, (right - left) * width, (bottom - top) * height],
+          point: { x: (left + right) / 2, y: (top + bottom) / 2 }
+        });
+      }
+      return entries;
+    }
+
+    let stream;
+    let cameraRequest = 0;
+    let scanning = false;
+
+    function stopCamera() {
+      cameraRequest++;
+      stream?.getTracks().forEach(track => track.stop());
+      stream = null;
+      video.srcObject = null;
+      video.hidden = true;
+      capture.disabled = true;
+      closeCamera.disabled = true;
+      openCamera.disabled = scanning;
+    }
+
+    async function scanImage(loadSource) {
+      if (scanning) return;
+      scanning = true;
+      stopCamera();
+      upload.disabled = true;
+      play.hidden = true;
+      photo.hidden = true;
+      conversions.replaceChildren();
+      scanStatus.textContent = "Looking for objects…";
+
+      try {
+        const source = await loadSource();
+        const width = source.naturalWidth || source.width;
+        const height = source.naturalHeight || source.height;
+        const scale = Math.min(1, 640 / Math.max(width, height));
+
+        const clean = document.createElement("canvas");
+        clean.width = Math.max(1, Math.round(width * scale));
+        clean.height = Math.max(1, Math.round(height * scale));
+        clean.getContext("2d").drawImage(source, 0, 0, clean.width, clean.height);
+
+        photo.width = clean.width;
+        photo.height = clean.height;
+        context.drawImage(clean, 0, 0);
+        photo.hidden = false;
+
+        if (location.protocol === "file:") {
+          throw new Error("Open http://localhost:8000 after running python3 server.py.");
+        }
+
+        const image = await new Promise(resolve => clean.toBlob(resolve, "image/jpeg", 0.9));
+        const response = await fetch("/api/scan", { method: "POST", body: image });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Scan failed.");
+        const entries = selectObjects(result.objects, clean.width, clean.height);
+
+        if (!entries.length) {
+          scanStatus.textContent = "No supported objects found. Try a clearer photo.";
+          return;
+        }
+
+        const placed = applyLayout(entries);
+        for (const entry of placed) showConversion(clean, entry);
+        scanStatus.textContent = placed.length === entries.length
+          ? "Level ready. Your objects have transformed."
+          : "Level ready. Some objects did not fit on the desk.";
+        if (!placed.some(entry => entry.role === "volcano")) {
+          scanStatus.textContent += " A default volcano was added.";
+        }
+        play.hidden = false;
+      } catch (error) {
+        console.error(error);
+        scanStatus.textContent = error.message || "Scan failed. Try another photo.";
+      } finally {
+        scanning = false;
+        upload.disabled = false;
+        upload.value = "";
+        openCamera.disabled = false;
+      }
+    }
+
+    upload.addEventListener("change", () => {
+      const file = upload.files[0];
+      if (!file) return;
+
+      scanImage(async () => {
+        const url = URL.createObjectURL(file);
+        try {
+          const image = new Image();
+          image.src = url;
+          await image.decode();
+          return image;
+        } finally {
+          URL.revokeObjectURL(url);
+        }
+      });
+    });
+
+    openCamera.addEventListener("click", async () => {
+      const request = ++cameraRequest;
+      openCamera.disabled = true;
+      closeCamera.disabled = false;
+      photo.hidden = true;
+      play.hidden = true;
+      conversions.replaceChildren();
+      scanStatus.textContent = "Opening camera…";
+
+      try {
+        const nextStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false
+        });
+        if (request !== cameraRequest) {
+          nextStream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
+        stream = nextStream;
+        video.srcObject = stream;
+        video.hidden = false;
+        await video.play();
+        if (request !== cameraRequest) return;
+
+        capture.disabled = false;
+        scanStatus.textContent = "Frame your objects, then click Take photo.";
+      } catch (error) {
+        if (request !== cameraRequest) return;
+        console.error(error);
+        stopCamera();
+        scanStatus.textContent = "Camera unavailable. Check permission or upload a photo.";
+      }
+    });
+
+    capture.addEventListener("click", () => {
+      if (!video.videoWidth || scanning) return;
+      const frame = document.createElement("canvas");
+      frame.width = video.videoWidth;
+      frame.height = video.videoHeight;
+      frame.getContext("2d").drawImage(video, 0, 0);
+      scanImage(() => frame);
+    });
+
+    closeCamera.addEventListener("click", () => {
+      stopCamera();
+      scanStatus.textContent = "Camera closed. You can reopen it or upload a photo.";
+    });
+
+    scanner.addEventListener("toggle", () => {
+      keys.clear();
+      if (!scanner.open && !closeCamera.disabled) stopCamera();
+    });
+
+    play.addEventListener("click", () => {
+      keys.clear();
+      reset();
+      scanner.open = false;
+    });
+
+    function startAttempt() {
+      keys.clear();
+      reset();
+      followCamera(0, true);
+    }
+
+    for (const screen of [welcomeScreen, deathScreen, victoryScreen]) {
+      screen.addEventListener("cancel", event => event.preventDefault());
+    }
+
+    byId("welcome-play").addEventListener("click", () => {
+      startAttempt();
+      welcomeScreen.close();
+    });
+    byId("welcome-scan").addEventListener("click", () => {
+      startAttempt();
+      scanner.open = true;
+      welcomeScreen.close();
+      scanner.querySelector("summary").focus();
+    });
+    byId("retry").addEventListener("click", () => {
+      attempt++;
+      startAttempt();
+      deathScreen.close();
+    });
+    byId("death-scan").addEventListener("click", () => {
+      attempt++;
+      startAttempt();
+      scanner.open = true;
+      deathScreen.close();
+      scanner.querySelector("summary").focus();
+    });
+    play.addEventListener("click", () => { attempt = 1; });
+
+    byId("victory-upload").addEventListener("click", () => {
+      photo.hidden = true;
+      play.hidden = true;
+      conversions.replaceChildren();
+      scanStatus.textContent = "Choose a new image or take a photo.";
+      upload.value = "";
+      scanner.open = true;
+      victoryScreen.close();
+      upload.focus();
+      upload.click();
+    });
+
+    byId("victory-replay").addEventListener("click", () => {
+      attempt = 1;
+      startAttempt();
+      victoryScreen.close();
+    });
+
+    welcomeScreen.showModal();
+    window.addEventListener("pagehide", stopCamera);
+  </script>
+</body>
+</html>
